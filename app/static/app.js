@@ -166,7 +166,7 @@ function showBanner(text) {
 }
 
 async function refreshStatus() {
-  const { counts, fetch: f, profile_ready, email_dry_run } = await api("/api/status");
+  const { counts, fetch: f, profile_ready, claude_ready, email_dry_run } = await api("/api/status");
   const parts = [`${counts.ready} à trier`];
   if (counts.analyzing) parts.push(`${counts.analyzing} en analyse`);
   parts.push(`${counts.liked} likées`);
@@ -175,9 +175,10 @@ async function refreshStatus() {
   const button = $("#fetch");
   button.disabled = f.running;
   button.textContent = f.running ? "Recherche…" : "Chercher des offres";
-  if (!profile_ready && !refreshStatus.warned) {
+  if ((!profile_ready || !claude_ready) && !refreshStatus.warned) {
     refreshStatus.warned = true;
-    showBanner("Ton profil n'est pas rempli : copie data/profile.example.yaml en data/profile.yaml.");
+    showView("settings");
+    showBanner("Bienvenue ! Remplis tes réglages (au moins la clé Claude, une source et les postes recherchés), puis enregistre.");
   }
   if (f.errors.length && !f.running && refreshStatus.lastErrors !== f.errors.join()) {
     refreshStatus.lastErrors = f.errors.join();
@@ -224,14 +225,64 @@ async function loadApps() {
   );
 }
 
-document.querySelectorAll(".tab").forEach((tab) =>
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t === tab));
-    $("#view-swipe").hidden = tab.dataset.view !== "swipe";
-    $("#view-apps").hidden = tab.dataset.view !== "apps";
-    if (tab.dataset.view === "apps") loadApps();
-  }),
-);
+function showView(view) {
+  document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.view === view));
+  for (const name of ["swipe", "apps", "settings"]) $(`#view-${name}`).hidden = name !== view;
+  if (view === "apps") loadApps();
+  if (view === "settings") loadSettings();
+}
+
+document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => showView(tab.dataset.view)));
+
+async function loadSettings() {
+  const { settings, profile, cv_ready } = await api("/api/settings");
+  document.querySelectorAll("[data-profile]").forEach((input) => {
+    const value = profile[input.dataset.profile];
+    input.value = input.hasAttribute("data-list") ? (value || []).join("\n") : value ?? "";
+  });
+  document.querySelectorAll("[data-setting]").forEach((input) => {
+    const value = settings[input.dataset.setting];
+    if (input.type === "checkbox") input.checked = Boolean(value);
+    else if (input.type === "password") {
+      input.value = "";
+      input.placeholder = value ? "Enregistrée" : "";
+    } else input.value = value ?? "";
+  });
+  $("#cv-status").textContent = cv_ready ? "CV enregistré. Choisis un fichier pour le remplacer." : "Aucun CV pour l'instant.";
+}
+
+$("#settings-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const profile = {};
+  document.querySelectorAll("[data-profile]").forEach((input) => {
+    profile[input.dataset.profile] = input.hasAttribute("data-list")
+      ? input.value.split("\n").map((v) => v.trim()).filter(Boolean)
+      : input.value.trim();
+  });
+  const settings = {};
+  document.querySelectorAll("[data-setting]").forEach((input) => {
+    settings[input.dataset.setting] = input.type === "checkbox" ? input.checked : input.value.trim();
+  });
+  try {
+    await api("/api/settings", { method: "PUT", body: JSON.stringify({ settings, profile }) });
+    await loadSettings();
+    showBanner("Réglages enregistrés.");
+    refreshStatus();
+  } catch (err) {
+    showBanner(`Erreur : ${err.message}`);
+  }
+});
+
+$("#cv").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch("/api/cv", { method: "POST", body: form });
+  showBanner(res.ok ? "CV enregistré." : `Erreur : ${(await res.json()).detail}`);
+  e.target.value = "";
+  loadSettings();
+});
 
 $("#fetch").addEventListener("click", async () => {
   await api("/api/fetch", { method: "POST" });

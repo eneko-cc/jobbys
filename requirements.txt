@@ -9,3 +9,4 @@ pypdf>=4.0
 beautifulsoup4>=4.12
 playwright>=1.45
 pytest>=8.0
+python-multipart>=0.0.9

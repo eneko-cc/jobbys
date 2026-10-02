@@ -24,36 +24,27 @@ d'utilisation et ton compte risquerait d'être restreint.
 - **Welcome to the Jungle** : lu directement sur le site, sans clé (peut casser si le site change).
 - **LinkedIn** : offres publiques lues sans ton compte. Désactivé par défaut, car LinkedIn bloque vite ces lectures.
 
-## Installation (une seule fois)
+## Démarrer (en un clic)
 
-Il faut Python 3.11 ou plus récent.
+1. Télécharge Jobbys : [jobbys-main.zip](https://github.com/eneko-cc/jobbys/archive/refs/heads/main.zip),
+   puis dézippe-le où tu veux (par exemple dans Documents).
+2. Double-clique sur **Jobbys.bat** (Windows) ou **Jobbys.command** (Mac).
 
-```bash
-git clone https://github.com/eneko-cc/jobbys.git
-cd jobbys
-python -m venv .venv
-# Windows : .venv\Scripts\activate      macOS / Linux : source .venv/bin/activate
-pip install -r requirements.txt
-playwright install chromium
-```
+C'est tout. Au premier lancement, Jobbys installe ce dont il a besoin (quelques minutes, et
+Python lui-même s'il manque sur Windows), ajoute un raccourci **Jobbys** sur ton bureau Windows,
+puis ouvre la page dans ton navigateur. Les fois suivantes, le raccourci ouvre Jobbys directement.
+Laisse la fenêtre noire ouverte pendant que tu utilises Jobbys : la fermer arrête Jobbys.
 
-Puis :
+Sur Mac, la première fois, fais clic droit sur **Jobbys.command** puis **Ouvrir**, car le fichier
+ne vient pas de l'App Store.
 
-1. Copie `.env.example` en `.env` et remplis au moins `ANTHROPIC_API_KEY` et une source
-   (France Travail ou Adzuna). Chaque ligne du fichier explique où trouver la clé.
-2. Copie `data/profile.example.yaml` en `data/profile.yaml`, remplis-le, et mets ton CV dans `data/cv.pdf`.
+La première page qui s'ouvre est **Réglages** : renseigne la clé Claude, au moins une source
+(France Travail ou Adzuna), ce que tu cherches et ton CV, puis **Enregistrer**. Chaque champ
+indique où trouver la clé correspondante. Ensuite, clique sur **Chercher des offres** et swipe :
+glisse la carte, ou utilise les boutons ✕ / ♥, ou les flèches ← / →.
 
-## Lancer
-
-```bash
-python -m app
-```
-
-Le navigateur s'ouvre sur http://localhost:8000. Clique sur **Chercher des offres**, attends
-l'analyse, puis swipe : glisse la carte, ou utilise les boutons ✕ / ♥, ou les flèches ← / →.
-
-Les emails sont en **mode test** au départ (`EMAIL_DRY_RUN=true`) : ils sont rédigés mais pas
-envoyés. Passe la valeur à `false` dans `.env` quand tu es prêt.
+Les emails sont en **mode test** au départ : ils sont rédigés mais pas envoyés. Décoche
+« Mode test » dans Réglages quand tu es prêt.
 
 ## Bon à savoir
 
@@ -63,8 +54,14 @@ envoyés. Passe la valeur à `false` dans `.env` quand tu es prêt.
   Connecte-toi une fois à Welcome to the Jungle ou HelloWork dans cette fenêtre et tu le resteras.
 - Tes données (offres, candidatures, profil, CV) restent dans le dossier `data/`, qui n'est pas envoyé sur GitHub.
 
-## Tests
+## Pour les développeurs
 
 ```bash
-pytest
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt && playwright install chromium
+python -m app     # lance le serveur
+pytest            # lance les tests
 ```
+
+Les réglages de la page sont enregistrés dans `.env` (modèle : `.env.example`) et le profil
+dans `data/profile.yaml` (modèle : `data/profile.example.yaml`).

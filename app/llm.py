@@ -11,12 +11,17 @@ from .config import Profile, settings
 FALLBACK = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
 
 _client: anthropic.Anthropic | None = None
+_client_key = ""
 
 
 def client() -> anthropic.Anthropic:
-    global _client
-    if _client is None:
-        _client = anthropic.Anthropic()
+    """Client réutilisé, recréé si la clé change dans les Réglages."""
+    global _client, _client_key
+    key = settings.anthropic_api_key
+    if not key:
+        raise RuntimeError("Clé API Claude manquante : renseigne-la dans Réglages.")
+    if _client is None or key != _client_key:
+        _client, _client_key = anthropic.Anthropic(api_key=key), key
     return _client
 
 

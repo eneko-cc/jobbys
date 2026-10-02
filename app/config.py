@@ -1,7 +1,7 @@
 """Réglages lus depuis le fichier .env et le profil data/profile.yaml."""
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 import yaml
@@ -13,35 +13,65 @@ DATA_DIR = Path(os.environ.get("JOBBYS_DATA_DIR", ROOT / "data"))
 load_dotenv(ROOT / ".env")
 
 
-def _flag(name: str, default: bool) -> bool:
-    value = os.environ.get(name)
-    if value is None or value == "":
-        return default
-    return value.strip().lower() in {"1", "true", "oui", "yes", "on"}
-
-
-@dataclass
-class Settings:
-    db_path: Path = DATA_DIR / "jobbys.db"
-    profile_path: Path = DATA_DIR / "profile.yaml"
-
-    anthropic_model: str = os.environ.get("JOBBYS_MODEL", "claude-opus-5-5")
-
-    france_travail_client_id: str = os.environ.get("FRANCE_TRAVAIL_CLIENT_ID", "")
-    france_travail_client_secret: str = os.environ.get("FRANCE_TRAVAIL_CLIENT_SECRET", "")
-    adzuna_app_id: str = os.environ.get("ADZUNA_APP_ID", "")
-    adzuna_app_key: str = os.environ.get("ADZUNA_APP_KEY", "")
-    enable_wttj: bool = _flag("ENABLE_WTTJ", True)
-    enable_linkedin: bool = _flag("ENABLE_LINKEDIN", False)
-
-    smtp_host: str = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-    smtp_port: int = int(os.environ.get("SMTP_PORT", "587"))
-    smtp_user: str = os.environ.get("SMTP_USER", "")
-    smtp_password: str = os.environ.get("SMTP_PASSWORD", "")
+# Réglage -> (variable du fichier .env, valeur par défaut)
+ENV_KEYS = {
+    "anthropic_api_key": ("ANTHROPIC_API_KEY", ""),
+    "anthropic_model": ("JOBBYS_MODEL", "claude-opus-5-5"),
+    "france_travail_client_id": ("FRANCE_TRAVAIL_CLIENT_ID", ""),
+    "france_travail_client_secret": ("FRANCE_TRAVAIL_CLIENT_SECRET", ""),
+    "adzuna_app_id": ("ADZUNA_APP_ID", ""),
+    "adzuna_app_key": ("ADZUNA_APP_KEY", ""),
+    "enable_wttj": ("ENABLE_WTTJ", True),
+    "enable_linkedin": ("ENABLE_LINKEDIN", False),
+    "smtp_host": ("SMTP_HOST", "smtp.gmail.com"),
+    "smtp_port": ("SMTP_PORT", 587),
+    "smtp_user": ("SMTP_USER", ""),
+    "smtp_password": ("SMTP_PASSWORD", ""),
     # Tant que c'est à true, les emails sont préparés mais pas envoyés.
-    email_dry_run: bool = _flag("EMAIL_DRY_RUN", True)
+    "email_dry_run": ("EMAIL_DRY_RUN", True),
+}
+SECRET_KEYS = {"anthropic_api_key", "france_travail_client_secret", "adzuna_app_key", "smtp_password"}
 
-    browser_profile_dir: Path = DATA_DIR / "browser"
+
+class Settings:
+    """Lit les réglages dans l'environnement à chaque accès, pour que la page
+    Réglages prenne effet sans redémarrer."""
+
+    db_path = DATA_DIR / "jobbys.db"
+    profile_path = DATA_DIR / "profile.yaml"
+    browser_profile_dir = DATA_DIR / "browser"
+    env_path = ROOT / ".env"
+
+    def __getattr__(self, name: str):
+        if name not in ENV_KEYS:
+            raise AttributeError(name)
+        env_name, default = ENV_KEYS[name]
+        value = os.environ.get(env_name, "")
+        if value == "":
+            return default
+        if isinstance(default, bool):
+            return value.strip().lower() in {"1", "true", "oui", "yes", "on"}
+        if isinstance(default, int):
+            return int(value)
+        return value
+
+    def update(self, values: dict) -> None:
+        """Enregistre des réglages dans .env et les applique tout de suite."""
+        lines = self.env_path.read_text(encoding="utf-8").splitlines() if self.env_path.exists() else []
+        for name, value in values.items():
+            env_name = ENV_KEYS[name][0]
+            if isinstance(value, bool):
+                value = "true" if value else "false"
+            value = str(value).replace("\n", " ").strip()
+            os.environ[env_name] = value
+            entry = f"{env_name}={value}"
+            for i, line in enumerate(lines):
+                if line.split("=", 1)[0].strip() == env_name:
+                    lines[i] = entry
+                    break
+            else:
+                lines.append(entry)
+        self.env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 settings = Settings()
@@ -120,3 +150,17 @@ def load_profile(path: Path | None = None) -> Profile:
         cv_pdf=cv.get("pdf", "") or "",
         cv_texte=cv.get("texte", "") or "",
     )
+
+
+def save_profile(profile: Profile, path: Path | None = None) -> None:
+    path = path or settings.profile_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = asdict(profile)
+    raw = {
+        "identite": {k: data[k] for k in ("prenom", "nom", "email", "telephone", "ville", "linkedin")},
+        "recherche": {
+            k: data[k] for k in ("mots_cles", "lieux", "teletravail", "salaire_min", "contrats", "criteres")
+        },
+        "cv": {"pdf": data["cv_pdf"], "texte": data["cv_texte"]},
+    }
+    path.write_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), encoding="utf-8")

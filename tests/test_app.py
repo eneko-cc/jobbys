@@ -35,7 +35,7 @@ def setup(monkeypatch):
     )
     sent = []
     monkeypatch.setattr(service.email_apply, "send", lambda msg: sent.append(msg))
-    monkeypatch.setattr(service.settings, "email_dry_run", False)
+    monkeypatch.setenv("EMAIL_DRY_RUN", "false")
     return TestClient(create_app(jobbys)), jobbys, sent
 
 
@@ -70,7 +70,7 @@ def test_swipe_flow(setup):
 
 def test_email_dry_run(setup, monkeypatch):
     client, jobbys, sent = setup
-    monkeypatch.setattr(service.settings, "email_dry_run", True)
+    monkeypatch.setenv("EMAIL_DRY_RUN", "true")
     offer_id, _ = jobbys.db.ingest(RawOffer(source="A", external_id="1", title="Poste", company="X", apply_email="rh@x.fr"))
     jobbys.analyze_pending()
     app_id = jobbys.like(offer_id)
