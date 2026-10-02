@@ -22,13 +22,13 @@ ENV_KEYS = {
     "adzuna_app_id": ("ADZUNA_APP_ID", ""),
     "adzuna_app_key": ("ADZUNA_APP_KEY", ""),
     "enable_wttj": ("ENABLE_WTTJ", True),
-    "enable_linkedin": ("ENABLE_LINKEDIN", False),
+    "enable_linkedin": ("ENABLE_LINKEDIN", True),
     "smtp_host": ("SMTP_HOST", "smtp.gmail.com"),
     "smtp_port": ("SMTP_PORT", 587),
     "smtp_user": ("SMTP_USER", ""),
     "smtp_password": ("SMTP_PASSWORD", ""),
     # Tant que c'est à true, les emails sont préparés mais pas envoyés.
-    "email_dry_run": ("EMAIL_DRY_RUN", True),
+    "email_dry_run": ("EMAIL_DRY_RUN", False),
 }
 SECRET_KEYS = {"anthropic_api_key", "france_travail_client_secret", "adzuna_app_key", "smtp_password"}
 
