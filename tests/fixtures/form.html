@@ -1,0 +1,11 @@
+<!doctype html><html><body>
+<a href="#" id="go" role="button" onclick="document.getElementById('f').hidden=false">Postuler</a>
+<form id="f" hidden>
+  <label for="fn">Prénom</label><input id="fn" name="firstname">
+  <label for="ln">Nom</label><input id="ln" name="lastname">
+  <input type="email" name="contact" placeholder="Votre adresse">
+  <label>Téléphone <input name="phone_number" type="tel"></label>
+  <label for="cv">Votre CV</label><input type="file" id="cv" name="resume">
+  <label for="msg">Message au recruteur</label><textarea id="msg"></textarea>
+  <button type="submit" onclick="window.submitted=true">Envoyer</button>
+</form></body></html>

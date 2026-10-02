@@ -1,0 +1,28 @@
+# Copie ce fichier en data/profile.yaml et remplis-le.
+
+identite:
+  prenom: ""
+  nom: ""
+  email: ""
+  telephone: ""
+  ville: ""
+  linkedin: ""
+
+recherche:
+  # Chaque mot-clé est cherché dans chaque lieu, sur chaque source.
+  mots_cles:
+    - "chef de projet"
+  lieux:
+    - "Paris"
+  teletravail: "partiel ou complet"
+  salaire_min: 40000
+  contrats:
+    - CDI
+  # Tout ce qui compte pour toi, en langage libre : secteurs, taille d'entreprise, ce que tu veux éviter...
+  criteres: ""
+
+cv:
+  # Mets ton CV dans le dossier data/ et indique son nom ici.
+  pdf: "cv.pdf"
+  # Ou colle le texte de ton CV ici à la place.
+  texte: ""

@@ -1,0 +1,12 @@
+{"resultats": [
+  {"id": "187ABCD", "intitule": "Chef de projet digital (H/F)", "description": "Vous pilotez les projets web.\nEnvoyez CV à recrutement@acme.fr",
+   "dateCreation": "2026-09-30T10:00:00.000Z", "lieuTravail": {"libelle": "75 - Paris 9e Arrondissement", "codePostal": "75009"},
+   "entreprise": {"nom": "ACME SAS"}, "typeContrat": "CDI", "typeContratLibelle": "Contrat à durée indéterminée",
+   "salaire": {"libelle": "Annuel de 42000 Euros à 48000 Euros"},
+   "contact": {"nom": "ACME - Mme Martin", "courriel": "recrutement@acme.fr"},
+   "origineOffre": {"origine": "1", "urlOrigine": "https://candidat.francetravail.fr/offres/recherche/detail/187ABCD"}},
+  {"id": "187EFGH", "intitule": "Product Owner", "description": "Rejoignez-nous.",
+   "lieuTravail": {"libelle": "69 - Lyon 3e Arrondissement"}, "entreprise": {"nom": "Globex"}, "typeContrat": "CDI",
+   "contact": {"urlPostulation": "https://globex.example/careers/po"},
+   "origineOffre": {"origine": "2", "partenaires": [{"nom": "HELLOWORK", "url": "https://www.hellowork.com/fr-fr/emplois/123.html"}]}}
+]}

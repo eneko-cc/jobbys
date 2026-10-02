@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jobbys</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>Jobbys</h1>
+    <nav>
+      <button class="tab active" data-view="swipe">Offres</button>
+      <button class="tab" data-view="apps">Candidatures</button>
+    </nav>
+    <button id="fetch" class="primary">Chercher des offres</button>
+  </header>
+
+  <p id="banner" hidden></p>
+
+  <main>
+    <section id="view-swipe">
+      <p id="counts"></p>
+      <div id="deck"></div>
+      <div id="actions">
+        <button id="pass" class="round nope" title="Passer (←)">✕</button>
+        <button id="like" class="round like" title="Postuler (→)">♥</button>
+      </div>
+    </section>
+
+    <section id="view-apps" hidden>
+      <ul id="apps"></ul>
+    </section>
+  </main>
+
+  <template id="card-tpl">
+    <article class="card">
+      <span class="stamp stamp-like">POSTULER</span>
+      <span class="stamp stamp-nope">PASSER</span>
+      <div class="card-head">
+        <div>
+          <h2 class="title"></h2>
+          <p class="company"></p>
+        </div>
+        <div class="score"><strong></strong><small>match</small></div>
+      </div>
+      <ul class="chips"></ul>
+      <p class="resume"></p>
+      <p class="why"></p>
+      <h3>Ce que tu feras</h3>
+      <ul class="missions"></ul>
+      <h3>Ce qu'ils recherchent</h3>
+      <ul class="profil"></ul>
+      <p class="sources"></p>
+    </article>
+  </template>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{"name": "Chef de projet digital", "slug": "chef-de-projet-digital_paris", "reference": "ACME_xyz",
+ "organization": {"name": "ACME", "slug": "acme"}, "offices": [{"city": "Paris", "country": "France"}],
+ "remote": "partial", "contract_type": "full_time", "published_at": "2026-09-29T09:00:00Z",
+ "summary": "ACME cherche son chef de projet.", "key_missions": ["Piloter les projets", "Animer l'équipe"],
+ "salary_minimum": 42000, "salary_maximum": 50000, "salary_currency": "EUR"}
