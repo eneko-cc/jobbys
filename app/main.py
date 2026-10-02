@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from . import llm
 from .config import DATA_DIR, ENV_KEYS, ROOT, SECRET_KEYS, Profile, load_profile, save_profile, settings
 from .db import Database
 from .service import Jobbys
@@ -34,7 +35,8 @@ def create_app(jobbys: Jobbys | None = None) -> FastAPI:
             "counts": jobbys.db.counts(),
             "fetch": jobbys.fetch_state,
             "profile_ready": bool(profile.mots_cles),
-            "claude_ready": bool(settings.anthropic_api_key),
+            "claude_ready": llm.backend() is not None,
+            "claude_mode": llm.backend(),
             "email_dry_run": settings.email_dry_run,
         }
 
