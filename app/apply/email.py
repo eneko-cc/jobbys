@@ -81,7 +81,10 @@ def deliver(to: str, subject: str, body: str, profile: Profile) -> tuple[str, st
         send(build(to, subject, body, profile))
         return "sent", f"Envoyé à {to}"
     if can_use_mail_app():
-        send_with_mail_app(to, subject, body, profile)
-        return "sent", f"Envoyé à {to} avec l'app Mail"
+        try:
+            send_with_mail_app(to, subject, body, profile)
+            return "sent", f"Envoyé à {to} avec l'app Mail"
+        except RuntimeError:
+            pass  # app Mail non configurée : on ouvre un brouillon à la place
     open_draft(to, subject, body)
     return "to_do", f"Brouillon ouvert pour {to} : joins ton CV et clique sur Envoyer."

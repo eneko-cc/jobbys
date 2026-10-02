@@ -56,7 +56,9 @@ def claude_cli() -> str | None:
         path = Path(candidate).expanduser()
         if path.exists():
             return str(path)
-    return None
+    # Claude Code fourni avec l'app Claude pour Mac (on prend la version la plus récente).
+    bundled = sorted(Path("~/Library/Application Support/Claude/claude-code").expanduser().glob("*/claude"))
+    return str(bundled[-1]) if bundled else None
 
 
 def backend() -> str | None:
