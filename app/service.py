@@ -89,15 +89,18 @@ class Jobbys:
             letter = llm.write_letter(offer, profile, channel)
             self.db.update_application(app_id, message=letter.message)
             if channel == "email":
-                msg = email_apply.build(offer["apply_email"], letter.objet, letter.message, profile)
                 if settings.email_dry_run:
                     self.db.update_application(
                         app_id, status="dry_run",
-                        detail=f"Email prêt pour {offer['apply_email']} (non envoyé : EMAIL_DRY_RUN=true)",
+                        detail=f"Email prêt pour {offer['apply_email']} (non envoyé : mode test)",
                     )
                 else:
-                    email_apply.send(msg)
-                    self.db.update_application(app_id, status="sent", detail=f"Envoyé à {offer['apply_email']}")
+                    if not (profile.prenom and profile.nom and profile.cv_path):
+                        raise RuntimeError("Ajoute ton prénom, ton nom et ton CV dans Réglages avant d'envoyer.")
+                    status, detail = email_apply.deliver(
+                        offer["apply_email"], letter.objet, letter.message, profile
+                    )
+                    self.db.update_application(app_id, status=status, detail=detail)
             elif channel == "form":
                 self.open_form(app_id, offer, letter.message, profile)
             else:

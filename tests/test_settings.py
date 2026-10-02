@@ -24,18 +24,18 @@ def client(tmp_path, monkeypatch):
 def test_settings_roundtrip(client, tmp_path):
     body = client.get("/api/settings").json()
     assert body["settings"]["anthropic_api_key"] is False
-    assert body["settings"]["email_dry_run"] is True
+    assert body["settings"]["email_dry_run"] is False
 
     body = client.put("/api/settings", json={
-        "settings": {"anthropic_api_key": "sk-test", "email_dry_run": False, "adzuna_app_id": "abc"},
+        "settings": {"anthropic_api_key": "sk-test", "email_dry_run": True, "adzuna_app_id": "abc"},
         "profile": {"prenom": "Alex", "mots_cles": ["chef de projet"], "salaire_min": "45000"},
     }).json()
     assert body["settings"]["anthropic_api_key"] is True  # jamais renvoyée en clair
-    assert body["settings"]["email_dry_run"] is False
+    assert body["settings"]["email_dry_run"] is True
     assert body["profile"]["prenom"] == "Alex"
     assert body["profile"]["salaire_min"] == 45000
     env = (tmp_path / ".env").read_text()
-    assert "ANTHROPIC_API_KEY=sk-test" in env and "EMAIL_DRY_RUN=false" in env
+    assert "ANTHROPIC_API_KEY=sk-test" in env and "EMAIL_DRY_RUN=true" in env
     assert client.get("/api/status").json()["claude_ready"] is True
 
     # Un secret laissé vide garde l'ancienne valeur, et le salaire non envoyé n'est pas effacé.

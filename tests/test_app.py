@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from app import llm, service
 from app.apply import channel_for
+from app.config import Profile
 from app.db import Database
 from app.main import create_app
 from app.service import Jobbys
@@ -26,7 +27,7 @@ def test_channel_for():
 
 
 @pytest.fixture
-def setup(monkeypatch):
+def setup(monkeypatch, tmp_path):
     db = Database(":memory:")
     jobbys = Jobbys(db)
     monkeypatch.setattr(llm, "analyze_offer", lambda offer, profile: {**ANALYSIS, "score": len(offer["title"])})
@@ -34,7 +35,13 @@ def setup(monkeypatch):
         llm, "write_letter", lambda offer, profile, channel: llm.Letter(objet="Candidature", message="Bonjour")
     )
     sent = []
-    monkeypatch.setattr(service.email_apply, "send", lambda msg: sent.append(msg))
+    monkeypatch.setattr(
+        service.email_apply, "deliver",
+        lambda to, subject, body, profile: (sent.append(to), ("sent", f"Envoyé à {to}"))[1],
+    )
+    cv = tmp_path / "cv.pdf"
+    cv.write_bytes(b"%PDF-1.4")
+    monkeypatch.setattr(service, "load_profile", lambda: Profile(prenom="Alex", nom="Martin", cv_pdf=str(cv)))
     monkeypatch.setenv("EMAIL_DRY_RUN", "false")
     return TestClient(create_app(jobbys)), jobbys, sent
 
@@ -62,7 +69,7 @@ def test_swipe_flow(setup):
     second = client.get("/api/offers/next").json()["offer"]
     app_id = client.post(f"/api/offers/{second['id']}/swipe", json={"direction": "like"}).json()["application_id"]
     assert wait_for(lambda: jobbys.db.get_application(app_id)["status"] == "sent")
-    assert sent[0]["To"] == "rh@x.fr"
+    assert sent == ["rh@x.fr"]
     assert client.get("/api/offers/next").json()["offer"] is None
     apps = client.get("/api/applications").json()["applications"]
     assert apps[0]["channel"] == "email" and apps[0]["message"] == "Bonjour"
@@ -75,6 +82,16 @@ def test_email_dry_run(setup, monkeypatch):
     jobbys.analyze_pending()
     app_id = jobbys.like(offer_id)
     assert wait_for(lambda: jobbys.db.get_application(app_id)["status"] == "dry_run")
+    assert sent == []
+
+
+def test_email_needs_profile(setup, monkeypatch):
+    client, jobbys, sent = setup
+    monkeypatch.setattr(service, "load_profile", lambda: Profile())
+    offer_id, _ = jobbys.db.ingest(RawOffer(source="A", external_id="1", title="Poste", company="X", apply_email="rh@x.fr"))
+    jobbys.analyze_pending()
+    app_id = jobbys.like(offer_id)
+    assert wait_for(lambda: jobbys.db.get_application(app_id)["status"] == "error")
     assert sent == []
 
 
