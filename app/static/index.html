@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jobbys</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>Jobbys</h1>
+    <nav>
+      <button class="tab active" data-view="swipe">Offres</button>
+      <button class="tab" data-view="apps">Candidatures</button>
+      <button class="tab" data-view="settings">Réglages</button>
+    </nav>
+    <button id="fetch" class="primary">Chercher des offres</button>
+  </header>
+
+  <p id="banner" hidden></p>
+
+  <main>
+    <section id="view-swipe">
+      <p id="counts"></p>
+      <div id="deck"></div>
+      <div id="actions">
+        <button id="pass" class="round nope" title="Passer (←)">✕</button>
+        <button id="like" class="round like" title="Postuler (→)">♥</button>
+      </div>
+    </section>
+
+    <section id="view-apps" hidden>
+      <ul id="apps"></ul>
+    </section>
+    <section id="view-settings" hidden>
+      <form id="settings-form">
+        <fieldset>
+          <legend>Toi</legend>
+          <label>Prénom <input data-profile="prenom"></label>
+          <label>Nom <input data-profile="nom"></label>
+          <label>Email <input type="email" data-profile="email"></label>
+          <label>Téléphone <input data-profile="telephone"></label>
+          <label>Ville <input data-profile="ville"></label>
+          <label>Profil LinkedIn <input data-profile="linkedin" placeholder="https://www.linkedin.com/in/..."></label>
+          <label>CV (PDF) <input type="file" id="cv" accept="application/pdf"></label>
+          <p class="hint" id="cv-status"></p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Ce que tu cherches</legend>
+          <label>Postes recherchés <small>un par ligne</small><textarea data-profile="mots_cles" data-list rows="3"></textarea></label>
+          <label>Lieux <small>un par ligne</small><textarea data-profile="lieux" data-list rows="2"></textarea></label>
+          <label>Télétravail souhaité <input data-profile="teletravail" placeholder="partiel ou complet"></label>
+          <label>Salaire minimum (brut annuel) <input type="number" data-profile="salaire_min" step="1000"></label>
+          <label>Contrats <small>un par ligne</small><textarea data-profile="contrats" data-list rows="2"></textarea></label>
+          <label>Autres critères <textarea data-profile="criteres" rows="3" placeholder="Secteurs, taille d'entreprise, ce que tu veux éviter..."></textarea></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Clés et sources</legend>
+          <label>Clé API Claude <input type="password" data-setting="anthropic_api_key" autocomplete="off"></label>
+          <p class="hint">À créer sur <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.</p>
+          <label>France Travail : identifiant <input data-setting="france_travail_client_id"></label>
+          <label>France Travail : clé secrète <input type="password" data-setting="france_travail_client_secret" autocomplete="off"></label>
+          <p class="hint">Gratuit : crée une application sur <a href="https://francetravail.io" target="_blank" rel="noopener">francetravail.io</a> avec l'API « Offres d'emploi v2 ».</p>
+          <label>Adzuna : app id <input data-setting="adzuna_app_id"></label>
+          <label>Adzuna : app key <input type="password" data-setting="adzuna_app_key" autocomplete="off"></label>
+          <p class="hint">Gratuit sur <a href="https://developer.adzuna.com" target="_blank" rel="noopener">developer.adzuna.com</a>.</p>
+          <label class="check"><input type="checkbox" data-setting="enable_wttj"> Welcome to the Jungle</label>
+          <label class="check"><input type="checkbox" data-setting="enable_linkedin"> Offres LinkedIn publiques</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Envoi des emails</legend>
+          <label>Adresse Gmail d'envoi <input type="email" data-setting="smtp_user"></label>
+          <label>Mot de passe d'application <input type="password" data-setting="smtp_password" autocomplete="off"></label>
+          <p class="hint">Pas ton mot de passe habituel : crée-en un sur <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">myaccount.google.com/apppasswords</a>.</p>
+          <label class="check"><input type="checkbox" data-setting="email_dry_run"> Mode test : rédiger les emails sans les envoyer</label>
+        </fieldset>
+
+        <p class="hint">Les champs secrets restent vides à l'affichage : laisse-les vides pour garder la valeur enregistrée.</p>
+        <button class="primary" type="submit">Enregistrer</button>
+      </form>
+    </section>
+  </main>
+
+  <template id="card-tpl">
+    <article class="card">
+      <span class="stamp stamp-like">POSTULER</span>
+      <span class="stamp stamp-nope">PASSER</span>
+      <div class="card-head">
+        <div>
+          <h2 class="title"></h2>
+          <p class="company"></p>
+        </div>
+        <div class="score"><strong></strong><small>match</small></div>
+      </div>
+      <ul class="chips"></ul>
+      <p class="resume"></p>
+      <p class="why"></p>
+      <h3>Ce que tu feras</h3>
+      <ul class="missions"></ul>
+      <h3>Ce qu'ils recherchent</h3>
+      <ul class="profil"></ul>
+      <p class="sources"></p>
+    </article>
+  </template>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
